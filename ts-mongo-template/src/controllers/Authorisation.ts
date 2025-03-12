@@ -1,11 +1,13 @@
 // Purpose: Middleware for authorisation checks
 import { Request, Response, NextFunction } from "express";
 
+interface UserPayload {
+  id: string;
+  role: string;
+}
+
 interface AuthenticatedRequest extends Request {
-  user?: {
-    id: number;
-    role: string;
-  };
+  user?: UserPayload;
 }
 
 export default class AUTH {
@@ -20,23 +22,23 @@ export default class AUTH {
         return res.status(401).json({
           status: 401,
           message: "Unauthorized - No user found",
-          error: "Authentication required"
+          error: "Authentication required",
         });
       }
 
       // Check if user has admin role
-      if (req.user.role !== 'admin') {
+      if (req.user.role !== "admin") {
         return res.status(403).json({
           status: 403,
           message: "Forbidden - Admin access required",
-          error: "Insufficient permissions"
+          error: "Insufficient permissions",
         });
       }
 
       // If user is admin, proceed to next middleware/route handler
       next();
     } catch (error) {
-      next(error)
+      next(error);
     }
   }
 }

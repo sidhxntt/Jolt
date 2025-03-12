@@ -1,12 +1,11 @@
 // Desc: Images routes
-import { Router } from "express";
-import { SubRoutes } from "./Sub_Routes";
 import JWT from "../controllers/Authentication";
 import limiter from "../controllers/rate_limitter";
 import { prisma } from "../utils/Clients/Prisma";
 import { ImageData } from "../utils/helpers/Images";
+import { SubRoutes } from "./Sub_Routes";
 
-const createUserRoutes = (): Router => {
+const createUserRoutes = () => {
 
     const auth = new JWT();
     const imagesRoutes = new SubRoutes();

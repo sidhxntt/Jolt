@@ -3,19 +3,28 @@ import { BaseData } from "./BaseData";
 import { PrismaClient } from "@prisma/client";
 
 export class AlbumData extends BaseData {
-    private readonly prisma: PrismaClient;
-  
+  private readonly prisma: PrismaClient;
+
   constructor(model: any) {
     super(model, "Album");
     this.prisma = new PrismaClient();
-
   }
 
   public async create(req: Request, res: Response) {
-    const { userID, title } = req.body;
+    const { userId, title } = req.body;
+
+    if (!userId || !title) {
+      return this.sendResponse(
+        res,
+        400,
+        "userId and title are required",
+        undefined,
+        "Missing required fields"
+      );
+    }
 
     const album = await this.model.create({
-      data: { userID, title },
+      data: { userId, title },
     });
 
     await this.clearModelCache();
@@ -26,6 +35,15 @@ export class AlbumData extends BaseData {
     const { id } = req.params;
     const { title } = req.body;
 
+    if (!title) {
+      return this.sendResponse(
+        res,
+        400,
+        "Title is required",
+        undefined,
+        "Missing required field"
+      );
+    }
     const album = await this.model.update({
       where: { id },
       data: { title },
@@ -43,7 +61,7 @@ export class AlbumData extends BaseData {
     const { id } = req.params;
 
     await this.prisma.$transaction(async (prisma: any) => {
-      await prisma.image.deleteMany({ where: { albumID: id } });
+      await prisma.image.deleteMany({ where: { albumId: id } });
       await prisma.album.delete({ where: { id } });
     });
 

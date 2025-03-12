@@ -7,10 +7,20 @@ export class PostData extends BaseData {
   }
 
   public async create(req: Request, res: Response) {
-    const { userID, title, body } = req.body;
+    const { userId, title, body } = req.body;
+    
+    if (!userId || !title || !body) {
+      return this.sendResponse(
+        res,
+        400,
+        "userId, title, and body are required",
+        undefined,
+        "Missing required fields"
+      );
+    }
 
     const post = await this.model.create({
-      data: { userID, title, body },
+      data: { userId, title, body },
     });
 
     await this.clearModelCache();
@@ -21,11 +31,24 @@ export class PostData extends BaseData {
     const { id } = req.params;
     const { title, body } = req.body;
 
+    if (!title && !body) {
+      return this.sendResponse(
+        res,
+        400,
+        "At least one field (title or body) must be provided",
+        undefined,
+        "Missing update fields"
+      );
+    }
+
     const post = await this.model.update({
       where: { id },
-      data: { title, body },
+      data: {
+        ...(title && { title }),
+        ...(body && { body }),
+      },
     });
-
+    
     await Promise.all([
       this.updateRecordCache(id, post),
       this.clearModelCache(),

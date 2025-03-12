@@ -7,10 +7,20 @@ export class ImageData extends BaseData {
   }
 
   public async create(req: Request, res: Response) {
-    const { albumID, title, url, thumbnailUrl } = req.body;
+    const { albumId, title, url, thumbnailUrl } = req.body;
+
+    if (!albumId) {
+      return this.sendResponse(
+        res,
+        400,
+        "Album Id is required",
+        undefined,
+        "Missing required field"
+      );
+    }
 
     const image = await this.model.create({
-      data: { albumID, title, url, thumbnailUrl },
+      data: { albumId, title, url, thumbnailUrl },
     });
 
     await this.clearModelCache();

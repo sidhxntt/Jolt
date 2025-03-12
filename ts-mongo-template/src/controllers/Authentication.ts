@@ -5,13 +5,15 @@ import { Request, Response, NextFunction } from "express";
 import { JwtPayload } from "jsonwebtoken";
 dotenv.config();
 
+interface UserPayload {
+  id: string;
+  role: string;
+}
+
 declare global {
   namespace Express {
     interface Request {
-      user?: JwtPayload & {
-        id: number;
-        role: string;
-      };
+      user?: JwtPayload & UserPayload;
     }
   }
 }
@@ -28,10 +30,10 @@ export default class JWT {
     this.maxAge = process.env.MAX_AGE;
   }
 
-  public createToken(id: string, role: string): Promise<string> {
+  public createToken(payload: UserPayload): Promise<string> {
     return new Promise<string>((resolve, reject) => {
       jwt.sign(
-        { id, role }, 
+        payload,
         this.secretKey,
         {
           expiresIn: parseInt(this.maxAge, 10),
@@ -63,7 +65,7 @@ export default class JWT {
           return res.status(403).json({ message: "Invalid or expired token" });
         }
         // Cast decoded to include both id and role
-        req.user = decoded as JwtPayload & { id: number; role: string };
+        req.user = decoded as JwtPayload & UserPayload;
         next();
       });
     } catch (error) {

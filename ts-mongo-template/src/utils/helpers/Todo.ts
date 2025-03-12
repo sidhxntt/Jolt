@@ -2,16 +2,24 @@ import { BaseData } from "./BaseData";
 import { Request, Response } from "express";
 
 export class TodoData extends BaseData {
-
   constructor(model: any) {
     super(model, "Todos");
   }
 
   public async create(req: Request, res: Response) {
-    const { userID, title, completed } = req.body;
+    const { userId, title, completed } = req.body;
+    if (!userId || !title) {
+      return this.sendResponse(
+        res,
+        400,
+        "userId and title are required",
+        undefined,
+        "Missing required fields"
+      );
+    }
 
     const todo = await this.model.create({
-      data: { userID, title, completed },
+      data: { userId, title, completed },
     });
 
     await this.clearModelCache();
@@ -22,9 +30,21 @@ export class TodoData extends BaseData {
     const { id } = req.params;
     const { title, completed } = req.body;
 
+    if (!title && completed === undefined) {
+      return this.sendResponse(
+        res,
+        400,
+        "At least one field (title or completed) must be provided",
+        undefined,
+        "Missing update fields"
+      );
+    }
     const todo = await this.model.update({
       where: { id },
-      data: { title, completed },
+      data: {
+        ...(title && { title }),
+        ...(completed !== undefined && { completed: Boolean(completed) }),
+      },
     });
 
     await Promise.all([
